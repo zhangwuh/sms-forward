@@ -27,8 +27,18 @@ import android.widget.Toast;
 
 import androidx.core.app.NotificationCompat;
 
+import org.apache.http.HttpResponse;
+import org.apache.http.HttpStatus;
+import org.apache.http.StatusLine;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.ContentType;
+import org.apache.http.entity.StringEntity;
+import org.apache.http.impl.client.DefaultHttpClient;
 import org.json.JSONObject;
 
+import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.HttpURLConnection;
@@ -85,22 +95,24 @@ public class ForwardSMSService extends Service {
 
     void forward(String urlAddress, String msg, String from) {
         try {
-            URL url = new URL(urlAddress);
-            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-            conn.setRequestMethod("POST");
-            conn.setRequestProperty("Content-Type", "application/json;charset=UTF-8");
-            conn.setRequestProperty("Accept","application/json");
-            conn.setDoOutput(true);
-            conn.setDoInput(true);
-
-
-            DataOutputStream os = new DataOutputStream(conn.getOutputStream());
-            os.writeBytes(String.format("{\"msg\":\"%s\",\"from\":\"%s\"}", msg, from));
-
-            os.flush();
-            os.close();
-
-            conn.disconnect();
+            HttpClient httpclient = new DefaultHttpClient();
+            String json = String.format("{\"msg\":\"%s\",\"from\":\"%s\"}", msg, from);
+            StringEntity requestEntity = new StringEntity(
+                    json, ContentType.APPLICATION_JSON);
+            HttpPost post = new HttpPost(urlAddress);
+            post.setEntity(requestEntity);
+            HttpResponse response = httpclient.execute(post);
+            StatusLine statusLine = response.getStatusLine();
+            if(statusLine.getStatusCode() == HttpStatus.SC_OK){
+                ByteArrayOutputStream out = new ByteArrayOutputStream();
+                response.getEntity().writeTo(out);
+                String responseString = out.toString();
+                Log.i("response", responseString);
+                out.close();
+            } else{
+                response.getEntity().getContent().close();
+                throw new IOException(statusLine.getReasonPhrase());
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }
