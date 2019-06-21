@@ -27,15 +27,6 @@ import android.widget.Toast;
 
 import androidx.core.app.NotificationCompat;
 
-import org.apache.http.HttpResponse;
-import org.apache.http.HttpStatus;
-import org.apache.http.StatusLine;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.entity.ContentType;
-import org.apache.http.entity.StringEntity;
-import org.apache.http.impl.client.DefaultHttpClient;
 import org.json.JSONObject;
 
 import java.io.ByteArrayOutputStream;
@@ -45,6 +36,14 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.Date;
 import java.util.ArrayList;
+
+import okhttp3.Call;
+import okhttp3.Callback;
+import okhttp3.MediaType;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.RequestBody;
+import okhttp3.Response;
 
 
 public class ForwardSMSService extends Service {
@@ -95,24 +94,26 @@ public class ForwardSMSService extends Service {
 
     void forward(String urlAddress, String msg, String from) {
         try {
-            HttpClient httpclient = new DefaultHttpClient();
             String json = String.format("{\"msg\":\"%s\",\"from\":\"%s\"}", msg, from);
-            StringEntity requestEntity = new StringEntity(
-                    json, ContentType.APPLICATION_JSON);
-            HttpPost post = new HttpPost(urlAddress);
-            post.setEntity(requestEntity);
-            HttpResponse response = httpclient.execute(post);
-            StatusLine statusLine = response.getStatusLine();
-            if(statusLine.getStatusCode() == HttpStatus.SC_OK){
-                ByteArrayOutputStream out = new ByteArrayOutputStream();
-                response.getEntity().writeTo(out);
-                String responseString = out.toString();
-                Log.i("response", responseString);
-                out.close();
-            } else{
-                response.getEntity().getContent().close();
-                throw new IOException(statusLine.getReasonPhrase());
-            }
+            OkHttpClient client = new OkHttpClient();
+            RequestBody body = RequestBody.create(MediaType.parse("application/json"), json);
+
+            Request request = new Request.Builder()
+                    .url(urlAddress)
+                    .post(body)
+                    .build();
+
+            client.newCall(request).enqueue(new Callback() {
+                @Override
+                public void onFailure(Call call, IOException e) {
+                    call.cancel();
+                }
+
+                @Override
+                public void onResponse(Call call, Response response) throws IOException {
+                    Log.d("TAG",response.body().string());
+                }
+            });
         } catch (Exception e) {
             e.printStackTrace();
         }
