@@ -7,35 +7,16 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.SharedPreferences;
-import android.database.ContentObserver;
-import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.net.Uri;
 import android.os.IBinder;
 import android.provider.Telephony;
-//import android.support.v7.app.NotificationCompat;
-import android.telephony.SmsManager;
+
 import android.telephony.SmsMessage;
-import android.text.format.DateFormat;
 import android.util.Log;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.core.app.NotificationCompat;
-
-import org.json.JSONObject;
-
-import java.io.ByteArrayOutputStream;
-import java.io.DataOutputStream;
 import java.io.IOException;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.util.Date;
-import java.util.ArrayList;
 
 import okhttp3.Call;
 import okhttp3.Callback;
@@ -50,16 +31,6 @@ public class ForwardSMSService extends Service {
     private static final String LOG_TAG = "ForwardSMSService";
 
     private static final String SMS_INBOX_URI = "content://sms/inbox";
-//    private static Uri uriSMS = Uri.parse("content://mms-sms/conversations/");
-
-    private static final String[] PROJECTION = new String[]{
-            Telephony.Sms._ID,
-            Telephony.Sms.ADDRESS,
-            Telephony.Sms.BODY,
-            Telephony.Sms.DATE
-    };
-
-    private long mReceivedMsgDate = 0;
 
     private final BroadcastReceiver receiver = new BroadcastReceiver() {
         @Override

@@ -51,8 +51,6 @@ public class MainActivity extends AppCompatActivity {
                         , Manifest.permission.READ_SMS
                         , Manifest.permission.RECEIVE_SMS};
                 requestPermissions(permissionsWeNeed, MY_PERMISSION_SEND_MSG_REQUEST_CODE);
-            } else {
-                // Otherwise, permissions were granted and we are ready to go!
             }
         }
     }
@@ -74,7 +72,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void sendSMS(View v) {
-        EditText editText = (EditText) findViewById(cc.mightu.sms_forward.R.id.edit_phone_number);
+        EditText editText = findViewById(R.id.edit_phone_number);
         String number = editText.getText().toString();
 
         SharedPreferences.Editor editor = getSharedPreferences("data", Context.MODE_PRIVATE).edit();
@@ -83,9 +81,6 @@ public class MainActivity extends AppCompatActivity {
 
         String message = "This is a test message to " + number;
         Log.i("sms", "message send:" + message);
-
-//        SmsManager smsManager = SmsManager.getDefault();
-//        smsManager.sendTextMessage(number, null, message, null, null);
     }
 }
 
