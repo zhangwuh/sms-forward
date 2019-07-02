@@ -39,25 +39,21 @@ public class ForwardSMSService extends Service {
             if(Telephony.Sms.Intents.SMS_RECEIVED_ACTION.equals(action)){
                 Log.i("sms", "on receive," + intent.getAction());
                 if (Telephony.Sms.Intents.SMS_RECEIVED_ACTION.equals(intent.getAction())) {
+                    StringBuilder fullMessage = new StringBuilder("");
+                    String url = context.getSharedPreferences("data", Context.MODE_PRIVATE).getString("url", "");
+                    String from = "";
                     for (SmsMessage smsMessage : Telephony.Sms.Intents.getMessagesFromIntent(intent)) {
-
                         String messageBody = smsMessage.getMessageBody();
-                        String from = smsMessage.getOriginatingAddress();
+                        from = smsMessage.getOriginatingAddress();
                         Log.i("sms", "body: " + messageBody);
                         Log.i("sms", "address: " + from);
-
-                        String message = "[" + from + "] " + messageBody;
-
-                        String url = context.getSharedPreferences("data", Context.MODE_PRIVATE).getString("url", "");
                         if (url.equals("")) {
                             Log.i("sms", "phone number not set. ignore this one.");
                             return;
                         }
-                        Log.i("sms", "sending to " + url);
-
-                        Log.i("sms", "message send:" + message);
-                        forward(url, messageBody, from);
+                        fullMessage.append(messageBody);
                     }
+                    forward(url, fullMessage.toString(), from);
                 }
             }
         }
